@@ -22,7 +22,7 @@ end;
 
 InterfaceComponents := function(x)
     local parts, block_indices, domain, interface, n, direction, not_yet_seen,
-    component, p;
+    component, p, start_points;
     parts := ExtRepOfObj(x);
     block_indices := IntRepOfBipartition(x);
     domain := DomainOfBipartition(x);
@@ -31,7 +31,12 @@ InterfaceComponents := function(x)
     not_yet_seen := [1 .. n];
 
     while not IsEmpty(not_yet_seen) do
-        p := not_yet_seen[1];
+        start_points := Intersection(not_yet_seen, domain);
+        if not IsEmpty(start_points) then
+            p := First(start_points);
+        else
+            p := First(not_yet_seen);
+        fi;
         direction := 1;
         component := [];
 
@@ -54,4 +59,45 @@ InterfaceComponents := function(x)
         Add(interface, component);
     od;
     return interface;
+end;
+
+ComponentLength := x -> Length(x) - 1;
+
+IsTwoPath := x -> ComponentLength(x) = 2 and First(x) <> Last(x);
+
+# Takes a list of lists
+IsCanonicalComponents := function(x)
+    local n, two_paths, component;
+    two_paths := Filtered(x, IsTwoPath);
+    n := Size(two_paths);
+    if n = 1 then
+        return true;
+    elif n = 0 or n > 3 then
+        return false;
+    fi;
+
+    for component in two_paths do
+        if [component[1] + 1, component[2] - 1, component[3] + 1] in two_paths
+            then
+            return false;
+        fi;
+    od;
+    return true;
+end;
+
+TwoPathsOfComponents := x -> Filtered(x, IsTwoPath);
+
+# IsCanonicalTwoPaths := function(x)
+#     if Length(x) = 0 then
+#         return false;
+#     fi;
+
+#     return not ContainsOverlappingComponents(x);
+# end;
+
+IsCanonicalBipartition := function(x)
+    local components;
+    components := InterfaceComponents(x);
+    # two_paths := TwoPathsOfComponents(components);
+    return IsCanonicalComponents(components);
 end;
