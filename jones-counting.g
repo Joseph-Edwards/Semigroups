@@ -67,6 +67,8 @@ ComponentLength := x -> Length(x) - 1;
 
 IsTwoPath := x -> ComponentLength(x) = 2 and First(x) <> Last(x);
 
+NumberOfTwoPaths := x -> Number(InterfaceComponents(x), IsTwoPath);
+
 # Takes a list of lists
 IsCanonicalComponents := function(x)
     local n, two_paths, component;
@@ -95,4 +97,65 @@ IsCanonicalBipartition := function(x)
     local components;
     components := InterfaceComponents(x);
     return IsCanonicalComponents(components);
+end;
+
+TypeTwoCanonicalBipartitions := function()
+    local degrees, nr_canonical_bips, degree, j, max_rank, max_rank_irr_ids,
+    canonical_bips, canonical_bipartition_types, n;
+    degrees := [7, 10, 13, 16, 19];
+    # degrees := [7, 10, 13];
+    nr_canonical_bips := [];
+
+    for degree in degrees do
+        Print(
+            Concatenation(
+                "Computing canonical bipartitions of order ",
+                String(degree),
+                ". . .\n"));
+        j := JonesMonoid(degree);
+        max_rank := (degree - 1) / 3 - 1;
+        max_rank_irr_ids := Filtered(
+            Idempotents(j, max_rank), IsIrreducibleBipartition);
+        canonical_bips := Filtered(max_rank_irr_ids, IsCanonicalBipartition);
+        canonical_bipartition_types := [];
+        for n in [1, 2, 3] do
+            Add(
+                canonical_bipartition_types,
+                Number(canonical_bips, x -> NumberOfTwoPaths(x) = n));
+        od;
+        Print(canonical_bipartition_types);
+        Print("\n");
+        Add(nr_canonical_bips, canonical_bipartition_types);
+    od;
+    return nr_canonical_bips;
+end;
+
+TypeOneCanonicalBipartitions := function()
+    local degrees, nr_canonical_bips, degree, j, max_rank, max_rank_irr_ids,
+    canonical_bips, canonical_bipartition_types, n;
+    degrees := [5, 8, 11];
+    nr_canonical_bips := [];
+
+    for degree in degrees do
+        Print(
+            Concatenation(
+                "Computing canonical bipartitions of order ",
+                String(degree),
+                ". . .\n"));
+        j := JonesMonoid(degree);
+        max_rank := (degree - 2) / 3;
+        max_rank_irr_ids := Filtered(
+            Idempotents(j, max_rank), IsIrreducibleBipartition);
+        canonical_bips := Filtered(max_rank_irr_ids, IsCanonicalBipartition);
+        canonical_bipartition_types := [];
+        for n in [1, 2, 3] do
+            Add(
+                canonical_bipartition_types,
+                Number(canonical_bips, x -> NumberOfTwoPaths(x) = n));
+        od;
+        Print(canonical_bipartition_types);
+        Print("\n");
+        Add(nr_canonical_bips, canonical_bipartition_types);
+    od;
+    return nr_canonical_bips;
 end;
